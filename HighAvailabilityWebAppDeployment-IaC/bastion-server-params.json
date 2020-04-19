@@ -1,0 +1,18 @@
+[
+    {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "HAWebAppProject"
+    },
+    {
+    "ParameterKey": "SSHNetworkIP",
+    "ParameterValue": "125.36.140.200/32"
+    },
+    {
+    "ParameterKey": "S3Bucket",
+    "ParameterValue": "hawebappbucket"
+    },
+    {
+    "ParameterKey": "BastionServerKeyName",
+    "ParameterValue": "habastionhost"
+    }
+]

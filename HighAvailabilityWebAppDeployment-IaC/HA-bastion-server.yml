@@ -1,0 +1,128 @@
+Description: >
+    Tata Ivan-Clare/ Udacity Project 2020
+
+Parameters:
+    EnvironmentName:
+        Description: An Environment name that will be prefixed to resources
+        Type: String
+    BastionServerKeyName:
+        Description: Bastion Host SSH Key Name
+        Type: 'AWS::EC2::KeyPair::KeyName'    
+    S3Bucket:
+        Description: Bucket name for Application
+        Type: String
+    SSHNetworkIP:
+        Description: The source that has SSH access to the bastion server
+        Type: String
+
+Resources:
+  BastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SSH Access to Bastion Instance
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${EnvironmentName}-VPCID"
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: !Sub ${SSHNetworkIP}
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+
+  BastionEC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+    - BastionSecurityGroup
+    - S3InstanceProfile
+    Properties:
+      IamInstanceProfile: !Ref S3InstanceProfile
+      ImageId: ami-005bdb005fb00e791
+      InstanceType: t3.small
+      KeyName: !Sub ${BastionServerKeyName}
+      SecurityGroupIds:
+      - Ref: BastionSecurityGroup
+      SubnetId: 
+        Fn::ImportValue: 
+          !Sub "${EnvironmentName}-PUB1-SN"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          apt-get update -y
+          apt-get install unzip awscli -y
+          cd /home/ubuntu
+          aws s3 cp https://hawebappbucket.s3-us-west-2.amazonaws.com/udagram/${BastionServerKeyName}.pem 
+          chmod 400 ${BastionServerKeyName}.pem
+  EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: 
+        Fn::ImportValue:
+          !Sub "${EnvironmentName}-VPCID"
+  EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    DependsOn:
+    - BastionEC2Instance
+    - EIP
+    Properties:
+      InstanceId:
+        Ref: BastionEC2Instance
+      AllocationId:
+        Fn::GetAtt:
+        - EIP
+        - AllocationId
+
+  S3AccessIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: '*'
+                Resource: '*'
+
+  S3InstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref S3AccessIAMRole
+
+
+Outputs:
+  BastionHost:
+    Description: A reference to the Bastion Host
+    Value: 
+      !Join
+        - ''
+        - - !GetAtt BastionEC2Instance.PrivateIp
+          - !Sub '/32'
+    Export:
+        Name: !Sub ${EnvironmentName}-BASTION-HOST
+
+  S3InstanceProfile:
+    Description: A reference to the s3 instance profile
+    Value: !Ref S3InstanceProfile
+    Export:
+        Name: !Sub ${EnvironmentName}-INSTANCE
+
+  BastionServerKeyName:
+    Description: A reference to the Bastion Host Key Name
+    Value: !Sub ${BastionServerKeyName}
+    Export:
+        Name: !Sub ${EnvironmentName}-BASTION-HOST-KEY-NAME
