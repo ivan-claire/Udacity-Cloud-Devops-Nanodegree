@@ -20,7 +20,7 @@ This needs to be done in an automated fashion so that the infrastructure can be 
 #### Cloud Architecture for Udagram
 
 Below is the Cloud architect diagram for the stack created
-![Cloud Architecture Diagram](https://github.com/ivan-claire/Udacity-Cloud-Devops-Nanodegree/CloudArchitectDiagram.png.png)
+![Cloud Architecture Diagram](https://github.com/ivan-claire/Udacity-Cloud-Devops-Nanodegree/blob/master/HighAvailabilityWebAppDeployment-IaC/CloudArchitectDiagram.png)
 
 
 A Launch Configuration for the application servers was created in order to deploy four servers
