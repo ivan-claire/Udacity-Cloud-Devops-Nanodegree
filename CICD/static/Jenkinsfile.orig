@@ -1,6 +1,10 @@
 pipeline {
     agent any
     stages {
+<<<<<<< HEAD
+
+=======
+>>>>>>> aws upload to s3 stage added
 	stage('Upload to AWS') {
             steps {
                 withAWS(region:'us-east-1', credentials:'aws-static') {
