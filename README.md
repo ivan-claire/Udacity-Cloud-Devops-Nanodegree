@@ -37,3 +37,7 @@ HA-server.yml and server-params.json
 #### Run the Program
 use the create_stack.sh and update_stack.sh files to create the stacks.
 
+### Project 3 - Jenkins Pipeline on AWS
+In this project, an ubuntu ec2 instance was created and run on AWS, Jenkins configured and a pipeline created to deploy a static website on S3.
+The final diagram can be seen below:
+![Final Result](https://github.com/ivan-claire/Udacity-Cloud-Devops-Nanodegree/blob/master/CICD/Screenshot08.PNG)
